@@ -1,0 +1,20 @@
+meta {
+  name: Create an Order
+  type: http
+  seq: 11
+}
+
+post {
+  url: http://localhost:3030/api/v1/order/01F8MECHZX3TBDSZ7XRADM79XE/newitem
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "itemID": "df",
+     "itemName": "Pizza",
+      "quantity": 2,
+    "pricePerUnit": 10
+  }
+}

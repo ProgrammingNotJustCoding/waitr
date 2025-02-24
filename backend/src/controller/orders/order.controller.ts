@@ -1,8 +1,8 @@
 import type { Context } from "hono";
-import { orderSchema, type OrderType } from "./order.schema";
+import { itemSchema, orderSchema, type OrderType } from "./order.schema";
 import db from "../../db";
 import { BackendError } from "../../utils/errors";
-import { ObjectId } from "mongodb";
+import { notifyNewOrder } from "../vendor/websocket";
 
 export async function handleCreateOrder(c: Context) {
   try {
@@ -11,10 +11,52 @@ export async function handleCreateOrder(c: Context) {
     const data = await (await db())
       .collection<OrderType>("orders")
       .insertOne(order);
+
+    await notifyNewOrder(order);
+
     return c.json({ success: true, data });
   } catch (error) {
     throw new BackendError("VALIDATION_ERROR", { details: error });
   }
+}
+
+export async function handleNewItem(c: Context) {
+  const orderId = c.req.param("order");
+  const body = await c.req.json();
+  const item = await itemSchema.parseAsync(body);
+
+  const order = await (await db())
+    .collection<OrderType>("orders")
+    .findOne({ orderID: orderId });
+
+  if (!order) {
+    throw new BackendError("NOT_FOUND", { message: "Order not found" });
+  }
+
+  if (!order.orderItems) {
+    order.orderItems = [];
+  }
+
+  const existingItem = order.orderItems.find(
+    (i) => i.itemName === item.itemName,
+  );
+
+  if (existingItem) {
+    existingItem.quantity += item.quantity;
+  } else {
+    order.orderItems.push(item);
+  }
+
+  await (await db())
+    .collection<OrderType>("orders")
+    .updateOne(
+      { orderID: orderId },
+      { $set: { orderItems: order.orderItems } },
+    );
+
+  await notifyNewOrder(order);
+
+  return c.json({ success: true, data: order });
 }
 
 export async function handleGetAllOrders(c: Context) {
@@ -34,7 +76,7 @@ export async function handleGetOrderDetails(c: Context) {
     const orderId = c.req.param("order");
     const order = await (await db())
       .collection<OrderType>("orders")
-      .findOne({ _id: new ObjectId(orderId) });
+      .findOne({ orderID: orderId });
     if (!order) {
       throw new BackendError("NOT_FOUND", { message: "Order not found" });
     }
@@ -51,7 +93,7 @@ export async function handleUpdateOrder(c: Context) {
     const order = await orderSchema.parseAsync(body);
     const result = await (await db())
       .collection<OrderType>("orders")
-      .updateOne({ _id: new ObjectId(orderId) }, { $set: order });
+      .updateOne({ orderID: orderId }, { $set: order });
     if (result.matchedCount === 0) {
       throw new BackendError("NOT_FOUND", { message: "Order not found" });
     }
@@ -66,7 +108,7 @@ export async function handleDeleteOrder(c: Context) {
     const orderId = c.req.param("order");
     const result = await (await db())
       .collection<OrderType>("orders")
-      .deleteOne({ _id: new ObjectId(orderId) });
+      .deleteOne({ orderID: orderId });
     if (result.deletedCount === 0) {
       throw new BackendError("NOT_FOUND", { message: "Order not found" });
     }

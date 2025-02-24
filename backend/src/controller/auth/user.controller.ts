@@ -2,7 +2,6 @@ import type { Context } from "hono";
 import { userSchema, type UserType } from "./user.schema";
 import db from "../../db";
 import { BackendError } from "../../utils/errors";
-import { ObjectId } from "mongodb";
 
 export async function handleCreateUser(c: Context) {
   try {
@@ -34,7 +33,7 @@ export async function handleGetUserDetails(c: Context) {
     const userId = c.req.param("user");
     const user = await (await db())
       .collection<UserType>("users")
-      .findOne({ _id: new ObjectId(userId) });
+      .findOne({ userID: userId });
     if (!user) {
       throw new BackendError("NOT_FOUND", { message: "User not found" });
     }
@@ -51,7 +50,7 @@ export async function handleUpdateUser(c: Context) {
     const user = await userSchema.parseAsync(body);
     const result = await (await db())
       .collection<UserType>("users")
-      .updateOne({ _id: new ObjectId(userId) }, { $set: user });
+      .updateOne({ userID: userId }, { $set: user });
     if (result.matchedCount === 0) {
       throw new BackendError("NOT_FOUND", { message: "User not found" });
     }
@@ -66,7 +65,7 @@ export async function handleDeleteUser(c: Context) {
     const userId = c.req.param("user");
     const result = await (await db())
       .collection<UserType>("users")
-      .deleteOne({ _id: new ObjectId(userId) });
+      .deleteOne({ userID: userId });
     if (result.deletedCount === 0) {
       throw new BackendError("NOT_FOUND", { message: "User not found" });
     }

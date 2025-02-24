@@ -1,0 +1,22 @@
+meta {
+  name: Get all Order
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:3030/api/v1/order
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": "01F8MECHZX3TBDSZ7XRADM79XJ",
+    "name": "Pav Bhaji",
+    "description": "This is awesome.",
+    "imageUrl": "https://example.com/image.jpg",
+    "price": 80,
+    "isDeleted": true
+  }
+}

@@ -3,7 +3,6 @@ import {
   handleCreateVendor,
   handleCreateVendorItem,
   handleDeleteVendor,
-  handleDeleteVendorItem,
   handleGetAllVendors,
   handleGetVendorDetails,
   handleGetVendorItems,
@@ -22,5 +21,13 @@ vendorRouter.delete("/:vendor", handleDeleteVendor);
 vendorRouter.post("/:vendor/items/new", handleCreateVendorItem);
 vendorRouter.get("/:vendor/items", handleGetVendorItems);
 vendorRouter.put("/:vendor/items/:item", handleUpdateVendorItem);
+
+vendorRouter.get("/ws", (c) => {
+  const { response } = c;
+  response.headers.set("Upgrade", "websocket");
+  response.headers.set("Connection", "Upgrade");
+  response.status = 101;
+  return response;
+});
 
 export default vendorRouter;

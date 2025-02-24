@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { FaArrowUp, FaKeyboard, FaX } from 'react-icons/fa6'
+import { FaArrowUp, FaKeyboard, FaMoneyBill, FaX } from 'react-icons/fa6'
 import { FaMicrophone } from 'react-icons/fa'
 import ReactMarkdown from 'react-markdown'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUtensils, FaMapMarkerAlt, FaClock, FaQuestion } from 'react-icons/fa'
+import remarkGfm from 'remark-gfm'
+import { FaUtensils, FaClock, FaQuestion } from 'react-icons/fa'
+import { RiLoader2Fill } from 'react-icons/ri'
 
 declare global {
   interface Window {
@@ -55,7 +57,7 @@ type QuickTip = {
 
 const quickTips: QuickTip[] = [
   { icon: <FaUtensils />, text: "What's on the menu today?" },
-  { icon: <FaMapMarkerAlt />, text: "What's your location?" },
+  { icon: <FaMoneyBill />, text: "Give my orders in a table with price and total" },
   { icon: <FaClock />, text: "What are your opening hours?" },
   { icon: <FaQuestion />, text: "Do you offer vegetarian options?" },
 ]
@@ -65,6 +67,7 @@ export default function ChatInterface() {
   const [toggle, setToggle] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
   ])
+  const [loading, setLoading] = useState(false)
 
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState('')
@@ -84,8 +87,9 @@ export default function ChatInterface() {
       timestamp: new Date()
     }
 
-    setMessages([...messages, newMessage])
     sendMessage(input)
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+
     setInput('')
     const textarea = document.querySelector('textarea')
     if (textarea) {
@@ -131,33 +135,39 @@ export default function ChatInterface() {
     setChatId(data.chat_id);
     return data.chat_id;
   }
-const sendMessage = async (input: string) => {
-  let chat = chatId;
-  if (!chat) {
-    chat = await createChat();
+  const sendMessage = async (input: string) => {
+    setLoading(true)
+    let chat = chatId;
+    if (!chat) {
+      chat = await createChat();
+    }
+
+    const resp = await fetch(`http://localhost:8000/chat/${chat}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "message": input
+      })
+    });
+
+    const response = await resp.json();
+    
+    if (response.response && response.response.toLowerCase().includes('added') && response.response.toLowerCase().includes('order')) {
+      sendMessage("Give my orders in a table with price and total")
+    }
+    const respText = response.response;
+
+    setLoading(false)
+    const assistantMessage: Message = {
+      id: Date.now().toString(),
+      content: respText,
+      role: 'assistant',
+      timestamp: new Date()
+    }
+    setMessages(prevMessages => [...prevMessages, assistantMessage])
   }
-
-  const resp = await fetch(`http://localhost:8000/chat/${chat}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      "message": input
-    })
-  });
-
-  const response = await resp.json();
-  const respText = response.response;
-
-  const newMessage: Message = {
-    id: Date.now().toString(),
-    content: respText,
-    role: 'assistant',
-    timestamp: new Date()
-  }
-  setMessages([...messages, newMessage])
-}
 
   return (
     messages.length > 0 ? (
@@ -179,29 +189,117 @@ const sendMessage = async (input: string) => {
                 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ type: "spring", duration: 0.3 }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <motion.pre
                   whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: 1,
+                    transition: {
+                      duration: 0.5
+                    }
+                  }}
                   style={{
                     textWrap: "wrap"
                   }}
                   className={`max-w-[80%] py-3 px-6 font-sans font-medium ${message.role === 'user'
                     ? 'dark:bg-primary/10 bg-primary-dark/10 text-primary-dark break-words rounded-l-3xl rounded-t-3xl rounded-br-md dark:text-primary ml-4'
-                    : ''} ${message.role === 'assistant' ? 'prose dark:prose-invert prose-sm max-w-none' : ''}`}
+                    : ''
+                    } ${message.role === 'assistant'
+                      ? 'prose dark:prose-invert prose-sm max-w-none typewriter-effect'
+                      : ''
+                    }`}
                 >
                   {message.role === 'assistant' ? (
-                    <ReactMarkdown components={{
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                       h1: ({ children }) => <span className="font-bold text-2xl">{children}</span>,
                       h2: ({ children }) => <span className="font-semibold text-xl">{children}</span>,
                       h3: ({ children }) => <span className="font-medium text-lg">{children}</span>,
+                      table: ({ children }) => <div className="overflow-x-auto"><table className="min-w-full rounded-lg divide-y dark:divide-foreground-dark/40 divide-foreground/40">{children}</table></div>,
+                      thead: ({ children }) => <thead className="bg-primary-dark/10 min-w-full dark:bg-primary/10 !text-primary font-semibold">{children}</thead>,
+                      tbody: ({ children }) => <tbody className="bg-foreground/5 min-w-full dark:bg-foreground-dark/5 divide-y dark:divide-foreground-dark/40 divide-foreground/40">{children}</tbody>,
+                      tr: ({ children }) => <tr className="hover:bg-foreground/5 dark:hover:bg-foreground-dark/5">{children}</tr>,
+                      th: ({ children }) => <th className="px-6 py-3 text-left text-sm font-medium !text-primary uppercase tracking-wider">{children}</th>,
+                      td: ({ children }) => <td className="px-6 py-4 whitespace-nowrap text-lg capitalize text-gray-900 dark:text-gray-100">{children}</td>,
                     }}>{message.content}</ReactMarkdown>
                   ) : (
                     message.content
                   )}
                 </motion.pre>
+                {
+                  message.content?.includes("order") && message.content?.includes("added") && (
+                    <div className='px-5 py-4 w-full rounded-2xl flex flex-col gap-1 border-foreground/15 dark:border-foreground-dark/15 bg-foreground/5 dark:bg-foreground-dark/5'>
+                      <div className='flex w-full flex-row-reverse justify-between items-center'>
+                        <h2 className='text-lg font-semibold opacity-70'>
+                          {(() => {
+                            const orderPattern = /(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+([\w\s]+?)(?=\s+(?:and|to your order|$))/gi;
+                            const orders = [];
+                            let match;
+
+                            while ((match = orderPattern.exec(message.content)) !== null) {
+                              const [, quantity, item] = match;
+                              const numericQuantity = {
+                                'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+                                'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10
+                              }[quantity.toLowerCase()] || parseInt(quantity);
+
+                              orders.push({ quantity: numericQuantity, item: item.trim() });
+                            }
+
+                            return orders.length > 0
+                              ? orders.map(order => `x${order.quantity}`).join(', ')
+                              : 'Order Added';
+                          })()}
+                        </h2>
+
+                        <div className='flex gap-4 items-center'>
+                          <h1 className='text-2xl font-semibold capitalize'>
+                            {(() => {
+                              const orderPattern = /(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+([\w\s]+?)(?=\s+(?:and|to your order|$))/gi;
+                              const orders = [];
+                              let match;
+
+                              while ((match = orderPattern.exec(message.content)) !== null) {
+                                const [, quantity, item] = match;
+                                const numericQuantity = {
+                                  'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+                                  'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10
+                                }[quantity.toLowerCase()] || parseInt(quantity);
+
+                                orders.push({ quantity: numericQuantity, item: item.trim() });
+                              }
+
+                              return orders.length > 0
+                                ? orders.map(order => order.item).join(', ')
+                                : 'Order Added';
+                            })()}
+                          </h1>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
               </motion.div>
             ))}
+            <div className='flex items-start justify-start w-full'>
+{
+  loading && (
+    <motion.div
+      animate={{ 
+        rotate: 360 
+      }}
+      transition={{ 
+        duration: 1,
+        repeat: Infinity,
+        ease: "linear"
+      }}
+    >
+      <RiLoader2Fill className='text-2xl text-foreground dark:text-foreground-dark' />
+    </motion.div>
+  )
+}
+            </div>
           </AnimatePresence>
         </div>
         <div className='p-4 mb-2'>

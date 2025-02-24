@@ -6,9 +6,7 @@ import {
 } from "./vendor.schema";
 import db from "../../db";
 import { BackendError } from "../../utils/errors";
-import { ObjectId } from "mongodb";
 import { ZodError } from "zod";
-import type { itemType } from "../orders/order.schema";
 import { ulid } from "ulid";
 
 export async function handleCreateVendor(c: Context) {
@@ -47,7 +45,7 @@ export async function handleGetVendorDetails(c: Context) {
     const vendorId = c.req.param("vendor");
     const vendor = await (await db())
       .collection<VendorType>("vendors")
-      .findOne({ _id: new ObjectId(vendorId), isDeleted: false });
+      .findOne({ id: vendorId, isDeleted: false });
     if (!vendor) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
@@ -67,7 +65,7 @@ export async function handleUpdateVendor(c: Context) {
     const vendor = await vendorSchema.parseAsync(body);
     const result = await (await db())
       .collection<VendorType>("vendors")
-      .updateOne({ _id: new ObjectId(vendorId) }, { $set: vendor });
+      .updateOne({ id: vendorId }, { $set: vendor });
     if (result.matchedCount === 0) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
@@ -86,7 +84,7 @@ export async function handleDeleteVendor(c: Context) {
     const result = await (await db())
       .collection<VendorType>("vendors")
       .updateOne(
-        { _id: new ObjectId(vendorId) },
+        { id: vendorId },
         { $set: { isDeleted: true, deletedAt: new Date() } },
       );
     if (result.matchedCount === 0) {
@@ -110,7 +108,7 @@ export async function handleCreateVendorItem(c: Context) {
 
     const vendor = await (await db())
       .collection("vendors")
-      .findOne({ _id: new ObjectId(vendorId), isDeleted: false });
+      .findOne({ id: vendorId, isDeleted: false });
     if (!vendor) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
@@ -120,10 +118,7 @@ export async function handleCreateVendorItem(c: Context) {
 
     await (await db())
       .collection("vendors")
-      .updateOne(
-        { _id: new ObjectId(vendorId) },
-        { $set: { items: vendorItems } },
-      );
+      .updateOne({ id: vendorId }, { $set: { items: vendorItems } });
 
     return c.json({ success: true, data: item });
   } catch (error) {
@@ -139,7 +134,7 @@ export async function handleGetVendorItems(c: Context) {
     const vendorId = c.req.param("vendor");
     const vendor = await (await db())
       .collection("vendors")
-      .findOne({ _id: new ObjectId(vendorId), isDeleted: false });
+      .findOne({ id: vendorId, isDeleted: false });
     if (!vendor) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
@@ -157,7 +152,7 @@ export async function handleGetAllVendorItems(c: Context) {
     const vendorId = c.req.param("vendor");
     const vendor = await (await db())
       .collection("vendors")
-      .findOne({ _id: new ObjectId(vendorId), isDeleted: false });
+      .findOne({ id: vendorId, isDeleted: false });
     if (!vendor) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
@@ -179,7 +174,7 @@ export async function handleUpdateVendorItem(c: Context) {
     const result = await (await db())
       .collection("vendors")
       .updateOne(
-        { _id: new ObjectId(vendorId), "items.id": itemId },
+        { id: vendorId, "items.id": itemId },
         { $set: { "items.$": item } },
       );
     if (result.matchedCount === 0) {
