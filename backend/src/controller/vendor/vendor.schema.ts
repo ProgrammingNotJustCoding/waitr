@@ -1,12 +1,28 @@
 import { ObjectId } from "mongodb";
 import { z } from "zod";
+import { itemSchema } from "../orders/order.schema";
 
 const vendorReviewSchema = z.object({
   rating: z.number().min(1).max(5).int(),
   comment: z.string().min(2).max(1000),
 });
 
-const objectIdSchema = z.custom<ObjectId>(
+export const VendorItemSchema = z.object({
+  id: z.string().ulid(),
+  name: z.string().min(2).max(100),
+  description: z.string().min(2).max(1000),
+  imageUrl: z.string().url().min(2).max(1000).optional(),
+  price: z.number().min(0),
+
+  isAvailable: z.boolean().default(true),
+  isDeleted: z.boolean().default(false),
+
+  createdAt: z.date().default(() => new Date()),
+  updatedAt: z.date().default(() => new Date()),
+  deletedAt: z.date().nullable(),
+});
+
+export const objectIdSchema = z.custom<ObjectId>(
   (val) => {
     return ObjectId.isValid(val);
   },
@@ -30,6 +46,8 @@ export const vendorSchema = z.object({
   website: z.string().url().min(2).optional(),
   userReviews: z.array(vendorReviewSchema).optional(),
 
+  items: z.array(itemSchema).optional().default([]),
+
   isDeleted: z.boolean().default(false),
 
   createdAt: z.date().default(() => new Date()),
@@ -38,3 +56,4 @@ export const vendorSchema = z.object({
 });
 
 export type VendorType = z.infer<typeof vendorSchema>;
+export type VendorItemType = z.infer<typeof VendorItemSchema>;
