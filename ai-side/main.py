@@ -3,6 +3,7 @@ from utils.chat import Chat, get_available_items_with_cost
 from routes import test_routes
 from uuid import uuid4
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 class ChatMessage(BaseModel):
     message: str
@@ -11,6 +12,13 @@ app = FastAPI()
 chats = {}
 orders = []
 app.include_router(test_routes.router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def hello_world():
