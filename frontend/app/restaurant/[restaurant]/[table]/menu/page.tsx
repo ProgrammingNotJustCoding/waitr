@@ -70,7 +70,7 @@ export default function Page() {
           <h3 className='text-sm opacity-20 font-semibold'>{restaurants.find((a) => a.id === restaurantId)?.name}</h3>
           <h1 className='text-2xl font-semibold'>Menu</h1>
         </div>
-        <div className='flex items-center w-full left-0 justify-center absolute bottom-12'>
+        <div className='flex items-center w-full left-0 justify-center absolute bottom-2'>
           <button
             onClick={() => setIsCartOpen(!isCartOpen)}
             className='flex items-center gap-2 px-4 py-2 bg-primary text-foreground font-semibold rounded-full hover:bg-primary/90 transition-colors'
