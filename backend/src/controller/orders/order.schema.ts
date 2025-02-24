@@ -29,7 +29,7 @@ export const orderSchema = z.object({
 
   createdAt: z.date().default(new Date()),
   updatedAt: z.date().default(new Date()),
-  deletedAt: z.date().nullable().default(null),
+  deletedAt: z.date().optional().nullable().default(null),
 });
 
 export type itemType = z.infer<typeof itemSchema>;

@@ -1,0 +1,22 @@
+meta {
+  name: Update Item
+  type: http
+  seq: 9
+}
+
+put {
+  url: http://localhost:3030/api/v1/vendor/67bc0705d2af4d1f79af2aa1/items/01JMVEPDJDKC86KVRQ0KGB99ZG
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": "01F8MECHZX3TBDSZ7XRADM79XJ",
+    "name": "Pav Bhaji",
+    "description": "This is awesome.",
+    "imageUrl": "https://example.com/image.jpg",
+    "price": 80,
+    "isDeleted": true
+  }
+}

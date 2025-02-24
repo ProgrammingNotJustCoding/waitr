@@ -22,6 +22,5 @@ vendorRouter.delete("/:vendor", handleDeleteVendor);
 vendorRouter.post("/:vendor/items/new", handleCreateVendorItem);
 vendorRouter.get("/:vendor/items", handleGetVendorItems);
 vendorRouter.put("/:vendor/items/:item", handleUpdateVendorItem);
-vendorRouter.delete("/:vendor/items/:item", handleDeleteVendorItem);
 
 export default vendorRouter;
