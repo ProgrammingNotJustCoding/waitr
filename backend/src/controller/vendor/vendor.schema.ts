@@ -19,7 +19,7 @@ export const VendorItemSchema = z.object({
 
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
-  deletedAt: z.date().nullable(),
+  deletedAt: z.date().optional().nullable().default(null),
 });
 
 const objectIdSchema = z.custom<ObjectId>(
@@ -52,7 +52,7 @@ export const vendorSchema = z.object({
 
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
-  deletedAt: z.date().optional().nullable(),
+  deletedAt: z.date().optional().nullable().default(null),
 });
 
 export type VendorType = z.infer<typeof vendorSchema>;

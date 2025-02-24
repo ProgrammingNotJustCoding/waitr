@@ -9,6 +9,7 @@ import { BackendError } from "../../utils/errors";
 import { ObjectId } from "mongodb";
 import { ZodError } from "zod";
 import type { itemType } from "../orders/order.schema";
+import { ulid } from "ulid";
 
 export async function handleCreateVendor(c: Context) {
   try {
@@ -105,6 +106,7 @@ export async function handleCreateVendorItem(c: Context) {
     const vendorId = c.req.param("vendor");
     const body = await c.req.json();
     const item = await VendorItemSchema.parseAsync(body);
+    item.id = ulid();
 
     const vendor = await (await db())
       .collection("vendors")
@@ -113,11 +115,14 @@ export async function handleCreateVendorItem(c: Context) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
 
+    const vendorItems = vendor.items || [];
+    vendorItems.push(item);
+
     await (await db())
       .collection("vendors")
       .updateOne(
         { _id: new ObjectId(vendorId) },
-        { $set: { items: [...vendor.items, item] } },
+        { $set: { items: vendorItems } },
       );
 
     return c.json({ success: true, data: item });
@@ -183,40 +188,6 @@ export async function handleUpdateVendorItem(c: Context) {
       });
     }
     return c.json({ success: true, data: item });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      throw new BackendError("VALIDATION_ERROR", { details: error });
-    }
-    throw new BackendError("INTERNAL_ERROR", { details: error });
-  }
-}
-
-export async function handleDeleteVendorItem(c: Context) {
-  try {
-    const vendorId = c.req.param("vendor");
-    const itemId = c.req.param("item");
-
-    const vendor = await (await db())
-      .collection("vendors")
-      .findOne({ _id: new ObjectId(vendorId) });
-    if (!vendor) {
-      throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
-    }
-    const itemIndex = vendor.items.findIndex(
-      (item: itemType) => item.itemID === itemId,
-    );
-    if (itemIndex === -1) {
-      throw new BackendError("NOT_FOUND", { message: "Item not found" });
-    }
-    vendor.items.splice(itemIndex, 1);
-    await (await db())
-      .collection("vendors")
-      .updateOne(
-        { _id: new ObjectId(vendorId) },
-        { $set: { items: vendor.items } },
-      );
-
-    return c.json({ success: true, data: { id: itemId } });
   } catch (error) {
     if (error instanceof ZodError) {
       throw new BackendError("VALIDATION_ERROR", { details: error });

@@ -17,7 +17,7 @@ export default function Page() {
           <h1 className='text-2xl font-semibold'>Chat</h1>
         </div>
       </header>
-      <div className='h-full w-full flex items-center justify-center'>
+      <div className='h-full w-[calc(100vw-64px)] flex items-center justify-center'>
         <ChatInterface />
       </div>
     </main>
