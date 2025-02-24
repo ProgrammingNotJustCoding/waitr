@@ -128,7 +128,7 @@ export default function ChatInterface() {
   const createChat = async (): Promise<string> => {
     if (chatId) return chatId;
 
-    const response = await fetch('http://localhost:8000/chat', {
+    const response = await fetch('https://waitr-bk7t.onrender.com/chat', {
       method: "POST"
     });
     const data = await response.json();
@@ -142,7 +142,7 @@ export default function ChatInterface() {
       chat = await createChat();
     }
 
-    const resp = await fetch(`http://localhost:8000/chat/${chat}`, {
+    const resp = await fetch(`https://waitr-bk7t.onrender.com/chat/${chat}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
