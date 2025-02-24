@@ -1,22 +1,30 @@
 from google import genai
 from typing import List
 from dotenv import load_dotenv
+from collections import Counter
 from os import getenv
 
+from pydantic import BaseModel
 import requests
+
+class Item(BaseModel):
+    item: str
+    note: str = ""
 
 load_dotenv()
 CLIENT = genai.Client(api_key=getenv("API"))
 order = []
+API_URL = "http://localhost:3030"
 
-
-def add_order(o: List[str]):    
-    order.extend(o)
+def add_order(o: List[Item]): 
+    print(order)
+    order.extend([dict(i) for i in o])
+    print(order)
     return {"status": "success"}
 
 
 def show_orders():
-    return order
+    return Counter(order)
 
 
 def clear_orders():
@@ -25,7 +33,10 @@ def clear_orders():
 
 
 def delete_item_from_order(item: str):
-    order.remove(item)
+    for i in range(0, len(order)):
+        if order[i] == item:
+            order.pop(i)
+            break
     return {"status": "success"}
 
 
@@ -110,7 +121,7 @@ class Chat:
             history=[
                 {
                     "role": "user",
-                    "parts": [{"text": "Please provide information in a table format whenever possible. Also attach the orders table to the bottom of the messages and currency is in ruppees"}]
+                    "parts": [{"text": "Please provide information in a table format whenever possible. Also attach the orders table to the bottom of the messages and currency is in ruppees. If no Note is given, give it as empty"}]
                 }
             ]
         )
