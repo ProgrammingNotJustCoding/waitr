@@ -8,6 +8,7 @@ import db from "../../db";
 import { BackendError } from "../../utils/errors";
 import { ObjectId } from "mongodb";
 import { ZodError } from "zod";
+import type { itemType } from "../orders/order.schema";
 
 export async function handleCreateVendor(c: Context) {
   try {
@@ -201,7 +202,9 @@ export async function handleDeleteVendorItem(c: Context) {
     if (!vendor) {
       throw new BackendError("NOT_FOUND", { message: "Vendor not found" });
     }
-    const itemIndex = vendor.items.findIndex((item) => item.id === itemId);
+    const itemIndex = vendor.items.findIndex(
+      (item: itemType) => item.itemID === itemId,
+    );
     if (itemIndex === -1) {
       throw new BackendError("NOT_FOUND", { message: "Item not found" });
     }

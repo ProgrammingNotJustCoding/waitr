@@ -1,0 +1,20 @@
+meta {
+  name: View All Vendor
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:3030/api/v1/vendor
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "rahul",
+    "email": "meh.pro@gmail.com",
+    "phone": "9840121224",
+    "address": "hula hula hu hu"
+  }
+}

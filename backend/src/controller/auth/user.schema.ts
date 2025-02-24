@@ -1,5 +1,15 @@
 import { z } from "zod";
-import { objectIdSchema } from "../vendor/vendor.schema";
+
+import { ObjectId } from "mongodb";
+
+const objectIdSchema = z.custom<ObjectId>(
+  (val) => {
+    return ObjectId.isValid(val);
+  },
+  {
+    message: "Invalid ObjectId",
+  },
+);
 
 export const userSchema = z.object({
   id: objectIdSchema.optional(),

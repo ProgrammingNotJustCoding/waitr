@@ -22,7 +22,7 @@ export const VendorItemSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
-export const objectIdSchema = z.custom<ObjectId>(
+const objectIdSchema = z.custom<ObjectId>(
   (val) => {
     return ObjectId.isValid(val);
   },
@@ -37,8 +37,8 @@ export const vendorSchema = z.object({
   email: z.string().email().min(2).max(100),
   phone: z.string().min(8).max(12),
   address: z.string().min(2).max(100),
-  city: z.string().min(2).max(100),
-  state: z.string().min(2).max(100),
+  city: z.string().min(2).max(100).optional(),
+  state: z.string().min(2).max(100).optional(),
   pincode: z.string().min(6).max(6).optional(),
   latitude: z.string().min(6).max(6).optional(),
   longitude: z.string().min(6).max(6).optional(),
@@ -46,13 +46,13 @@ export const vendorSchema = z.object({
   website: z.string().url().min(2).optional(),
   userReviews: z.array(vendorReviewSchema).optional(),
 
-  items: z.array(itemSchema).optional().default([]),
+  items: z.array(itemSchema).optional(),
 
   isDeleted: z.boolean().default(false),
 
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
-  deletedAt: z.date().nullable(),
+  deletedAt: z.date().optional().nullable(),
 });
 
 export type VendorType = z.infer<typeof vendorSchema>;

@@ -6,7 +6,7 @@ config();
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]).default("development"),
   PORT: z.string().regex(/^\d+$/).optional().default("3030"),
-  MONGO_URI: z.string().regex(/^mongodb\/\/.*$/),
+  MONGO_URI: z.string(),
   SECRET: z.string().optional().default("INNOFUSION_KA_HAM"),
 });
 
