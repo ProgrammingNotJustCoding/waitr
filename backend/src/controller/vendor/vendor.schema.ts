@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { itemSchema } from "../orders/order.schema";
 
@@ -13,26 +12,15 @@ export const VendorItemSchema = z.object({
   description: z.string().min(2).max(1000),
   imageUrl: z.string().url().min(2).max(1000).optional(),
   price: z.number().min(0),
-
   isAvailable: z.boolean().default(true),
   isDeleted: z.boolean().default(false),
-
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
   deletedAt: z.date().optional().nullable().default(null),
 });
 
-const objectIdSchema = z.custom<ObjectId>(
-  (val) => {
-    return ObjectId.isValid(val);
-  },
-  {
-    message: "Invalid ObjectId",
-  },
-);
-
 export const vendorSchema = z.object({
-  id: objectIdSchema.optional(),
+  id: z.string().ulid().optional(),
   name: z.string().min(2).max(100),
   email: z.string().email().min(2).max(100),
   phone: z.string().min(8).max(12),
@@ -42,14 +30,10 @@ export const vendorSchema = z.object({
   pincode: z.string().min(6).max(6).optional(),
   latitude: z.string().min(6).max(6).optional(),
   longitude: z.string().min(6).max(6).optional(),
-
   website: z.string().url().min(2).optional(),
   userReviews: z.array(vendorReviewSchema).optional(),
-
   items: z.array(itemSchema).optional(),
-
   isDeleted: z.boolean().default(false),
-
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
   deletedAt: z.date().optional().nullable().default(null),
