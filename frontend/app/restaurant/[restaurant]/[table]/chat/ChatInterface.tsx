@@ -67,6 +67,7 @@ export default function ChatInterface() {
   ])
 
   const [input, setInput] = useState('')
+  const [chatId, setChatId] = useState('')
 
   useEffect(() => {
     if (input.trim())
@@ -84,6 +85,7 @@ export default function ChatInterface() {
     }
 
     setMessages([...messages, newMessage])
+    sendMessage(input)
     setInput('')
     const textarea = document.querySelector('textarea')
     if (textarea) {
@@ -119,6 +121,44 @@ export default function ChatInterface() {
     }
   }
 
+  const createChat = async (): Promise<string> => {
+    if (chatId) return chatId;
+
+    const response = await fetch('http://localhost:8000/chat', {
+      method: "POST"
+    });
+    const data = await response.json();
+    setChatId(data.chat_id);
+    return data.chat_id;
+  }
+const sendMessage = async (input: string) => {
+  let chat = chatId;
+  if (!chat) {
+    chat = await createChat();
+  }
+
+  const resp = await fetch(`http://localhost:8000/chat/${chat}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      "message": input
+    })
+  });
+
+  const response = await resp.json();
+  const respText = response.response;
+
+  const newMessage: Message = {
+    id: Date.now().toString(),
+    content: respText,
+    role: 'assistant',
+    timestamp: new Date()
+  }
+  setMessages([...messages, newMessage])
+}
+
   return (
     messages.length > 0 ? (
       <div className='flex flex-col w-full max-w-3xl pb-4 h-[calc(100vh-70px)]'>
@@ -143,8 +183,11 @@ export default function ChatInterface() {
               >
                 <motion.pre
                   whileHover={{ scale: 1.02 }}
+                  style={{
+                    textWrap: "wrap"
+                  }}
                   className={`max-w-[80%] py-3 px-6 font-sans font-medium ${message.role === 'user'
-                    ? 'dark:bg-primary/10 bg-primary-dark/10 text-primary-dark rounded-l-3xl rounded-t-3xl rounded-br-md dark:text-primary ml-4'
+                    ? 'dark:bg-primary/10 bg-primary-dark/10 text-primary-dark break-words rounded-l-3xl rounded-t-3xl rounded-br-md dark:text-primary ml-4'
                     : ''} ${message.role === 'assistant' ? 'prose dark:prose-invert prose-sm max-w-none' : ''}`}
                 >
                   {message.role === 'assistant' ? (
@@ -162,9 +205,7 @@ export default function ChatInterface() {
           </AnimatePresence>
         </div>
         <div className='p-4 mb-2'>
-          <div className='flex gap-2 mb-4 flex-wrap'>
 
-          </div>
           <motion.div
             initial={false}
             animate={{
@@ -229,7 +270,7 @@ export default function ChatInterface() {
               height: "auto",
             }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className={`flex gap-4 w-full dark:bg-white/5 opacity-100 bg-black/5 rounded-3xl p-3 ${isRecording ? 'border border-primary-dark' : ''}`}
+            className={`flex gap-4 flex-col w-full dark:bg-white/5 opacity-100 bg-black/5 rounded-3xl p-3 ${isRecording ? 'border border-primary-dark' : ''}`}
           >
             <textarea
               value={input}
@@ -237,11 +278,11 @@ export default function ChatInterface() {
                 setInput(e.target.value)
                 const textarea = e.target
                 textarea.style.height = 'auto'
-                textarea.style.height = `${Math.min(textarea.scrollHeight, 96)}px`
+                textarea.style.height = `${Math.min(textarea.scrollHeight, 140)}px`
               }}
               onKeyDown={handleKeyDown}
               placeholder="Let's order something."
-              className='flex-1 focus:ring-transparent bg-transparent p-2 outline-none font-medium resize-none min-h-[6rem] overflow-y-auto focus:outline-none transition-[height] duration-200 ease-in-out'
+              className='flex-1 focus:ring-transparent bg-transparent p-2 outline-none font-medium resize-none min-h-[4rem] overflow-y-auto focus:outline-none transition-[height] duration-200 ease-in-out'
               rows={1}
             />
             <motion.div className='flex justify-end items-end gap-2'>
