@@ -71,10 +71,18 @@ def get_available_items_with_cost():
         }
     }
 
+def set_order_final():
+    print("Order:")
+    for item in order:
+        print(item)
+    print("Total cost:", sum([get_available_items_with_cost()[item]['cost'] for item in order]))
+    return {"status" : "success"}
+
+
 class Chat:
     def __init__(self):
         config = {
-            'tools': [add_order, show_orders, clear_orders, delete_item_from_order, get_available_items_with_cost]
+            'tools': [add_order, show_orders, clear_orders, delete_item_from_order, get_available_items_with_cost, set_order_final]
         }
         self.chat = CLIENT.chats.create(model="gemini-2.0-flash", config=config) 
 
