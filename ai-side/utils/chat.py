@@ -105,9 +105,14 @@ class Chat:
             ]
         }
         self.chat = CLIENT.chats.create(
-            model="gemini-2.0-flash", 
+            model="gemini-2.0-flash",
             config=config,
-            history=[]
+            history=[
+                {
+                    "role": "user",
+                    "parts": [{"text": "Please provide information in a table format whenever possible. Also attach the orders table to the bottom of the messages and currency is in ruppees"}]
+                }
+            ]
         )
 
     def send(self, message: str):
