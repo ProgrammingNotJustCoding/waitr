@@ -1,30 +1,22 @@
 from google import genai
 from typing import List
 from dotenv import load_dotenv
-from collections import Counter
 from os import getenv
 
-from pydantic import BaseModel
 import requests
-
-class Item(BaseModel):
-    item: str
-    note: str = ""
 
 load_dotenv()
 CLIENT = genai.Client(api_key=getenv("API"))
 order = []
-API_URL = "http://localhost:3030"
 
-def add_order(o: List[Item]): 
-    print(order)
-    order.extend([dict(i) for i in o])
-    print(order)
+
+def add_order(o: List[str]):    
+    order.extend(o)
     return {"status": "success"}
 
 
 def show_orders():
-    return Counter(order)
+    return order
 
 
 def clear_orders():
@@ -33,10 +25,7 @@ def clear_orders():
 
 
 def delete_item_from_order(item: str):
-    for i in range(0, len(order)):
-        if order[i] == item:
-            order.pop(i)
-            break
+    order.remove(item)
     return {"status": "success"}
 
 
@@ -46,7 +35,6 @@ def get_available_items_with_cost():
             "count": 10,
             "cost": 100,
             "priority": True,
-            "description": "Cheeseburger is a hamburger topped with cheese. Traditionally, the slice of cheese is placed on top of the meat patty, but the burger can include many variations in structure, ingredients, and composition.",
             "recipe": [
                 "Bun",
                 "Patty",
@@ -62,7 +50,6 @@ def get_available_items_with_cost():
             "count": 5,
             "cost": 200,
             "priority": False,
-            "description": "Pizza is a savory dish of Italian origin consisting of a usually round, flattened base of leavened wheat-based dough topped with tomatoes, cheese, and often various other ingredients.",
             "recipe": [
                 "Dough",
                 "Tomato Sauce",
@@ -78,7 +65,6 @@ def get_available_items_with_cost():
             "count": 20,
             "cost": 50,
             "priority": False,
-            "description": "A hamburger is a sandwich consisting of one or more cooked patties of ground meat, usually beef, placed inside a sliced bread roll or bun.",
             "recipe": [
                 "Bun",
                 "Patty",
@@ -121,7 +107,7 @@ class Chat:
             history=[
                 {
                     "role": "user",
-                    "parts": [{"text": "Please provide information in a table format whenever possible. Also attach the orders table to the bottom of the messages and currency is in ruppees. If no Note is given, give it as empty"}]
+                    "parts": [{"text": "Please provide information in a table format whenever possible, if i ask for menu just SHARE ME THE menu with price please? also if i dont have an order and not asking for my order then do not give my order stuff. If there is a table for my orders then do not mention current orders and with plain text. If i ask for bill, sum every item up and show all items and price, if there is multiple then add quantities instead of spamming... If i add orders then please show me the prizes too! Also attach the orders table to the bottom of the messages and currency is in ruppees, do NOT show receipies if not mentioned."}]
                 }
             ]
         )
