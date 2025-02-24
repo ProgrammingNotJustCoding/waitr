@@ -1,13 +1,21 @@
 from fastapi import FastAPI
-from utils.chat import Chat
+from utils.chat import Chat, get_available_items_with_cost
+from routes import test_routes
 from uuid import uuid4
+from pydantic import BaseModel
 
-app = FastAPI() 
+class ChatMessage(BaseModel):
+    message: str
+
+app = FastAPI()
 chats = {}
+orders = []
+app.include_router(test_routes.router)
 
 @app.get("/")
 async def hello_world():
     return {"message": "Hello World"}
+
 
 @app.post("/chat")
 async def create_chat():
@@ -16,9 +24,10 @@ async def create_chat():
     chats[str(unique_id)] = chat
     return {"chat_id": unique_id}
 
+
 @app.post("/chat/{chat_id}/")
-async def send_message(chat_id: str, message: str):
+async def send_message(chat_id: str, text: ChatMessage):
     print(chats)
     chat = chats[chat_id]
-    response = chat.send(message)
+    response = chat.send(text.message)
     return {"response": response}
