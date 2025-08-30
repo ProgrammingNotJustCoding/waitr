@@ -16,7 +16,7 @@
     "@yudiel/react-qr-scanner": "^2.2.1",
     "bcrypt": "^5.1.1",
     "framer-motion": "^12.4.7",
-    "next": "15.1.7",
+    "next": "15.4.7",
     "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
