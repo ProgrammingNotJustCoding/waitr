@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.13.8
-        version: 1.13.8(hono@4.7.2)
+        version: 1.13.8(hono@4.11.4)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
       hono:
-        specifier: ^4.7.2
-        version: 4.7.2
+        specifier: ^4.11.4
+        version: 4.11.4
       mongodb:
         specifier: ^6.13.1
         version: 6.13.1
@@ -241,8 +241,8 @@ packages:
   get-tsconfig@4.10.0:
     resolution: {integrity: sha512-kGzZ3LWWQcGIAmg6iWvXn0ei6WDtV26wzHRMwDSzmAbcXrTEXxHy6IehI6/4eT6VRKyMP1eF1VqwrVUmE/LR7A==}
 
-  hono@4.7.2:
-    resolution: {integrity: sha512-8V5XxoOF6SI12jkHkzX/6aLBMU5GEF5g387EjVSQipS0DlxWgWGSMeEayY3CRBjtTUQYwLHx9JYouWqKzy2Vng==}
+  hono@4.11.4:
+    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
   memory-pager@1.5.0:
@@ -408,9 +408,9 @@ snapshots:
   '@esbuild/win32-x64@0.25.0':
     optional: true
 
-  '@hono/node-server@1.13.8(hono@4.7.2)':
+  '@hono/node-server@1.13.8(hono@4.11.4)':
     dependencies:
-      hono: 4.7.2
+      hono: 4.11.4
 
   '@mongodb-js/saslprep@1.2.0':
     dependencies:
@@ -471,7 +471,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  hono@4.7.2: {}
+  hono@4.11.4: {}
 
   memory-pager@1.5.0: {}
 
